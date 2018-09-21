@@ -28,37 +28,33 @@ class StreamFieldFactory(ParameteredAttribute):
             <streamfield>__<index>__<block_name>__<key>='foo',
 
     """
-    def __init__(self, factories, **kwargs):
+    def __init__(self, field_definition, factories, **kwargs):
         super(StreamFieldFactory, self).__init__(**kwargs)
-        self.factories = factories
+        self.factories = {block_type: factory for block_type, factory in factories}
+        self.field_definition = field_definition
 
     def generate(self, step, params):
+        result = []
 
-        result = defaultdict(lambda: defaultdict(lambda: defaultdict()))
-
-        for key, value in params.items():
+        streamdata = params.get('streamdata', [])
+        for block_type, value in streamdata:
+            # Look for the block factory from the block type
             try:
-                index, block_name, param = key.split('__', 2)
-            except ValueError:
-                continue
-            if not index.isdigit():
+                block_factory = self.factories[block_type]
+            except KeyError:
                 continue
 
-            index = int(index)
-            result[index][block_name][param] = value
+            if isinstance(value, dict):
+                block_value = block_factory(**value)
+            elif isinstance(value, list):
+                block_value = block_factory(items=value)
+            else:
+                block_value = block_factory(value=value)
 
-        retval = []
-        for index, block_items in sorted(result.items()):
-            for block_name, block_params in block_items.items():
-                try:
-                    block_factory = self.factories[block_name]
-                except KeyError:
-                    raise ValueError(
-                        "No factory defined for block `%s`" % block_name)
+            result.append({'type': block_type, 'value': block_value})
 
-                value = block_factory(**block_params)
-                retval.append((block_name, value))
-        return retval
+        stream_block = self.field_definition.field.stream_block
+        return blocks.StreamValue(stream_block, result, is_lazy=True)
 
 
 class ListBlockFactory(factory.SubFactory):
@@ -68,20 +64,19 @@ class ListBlockFactory(factory.SubFactory):
     def generate(self, step, params):
         subfactory = self.get_factory()
 
-        result = defaultdict(dict)
-        for key, value in params.items():
-            if key.isdigit():
-                result[int(key)]['value'] = value
+        result = []
+        items = params.get('items', [])
+        for value in items:
+            if isinstance(value, dict):
+                block_value = subfactory(**value)
+            elif isinstance(value, list):
+                block_value = subfactory(items=value)
             else:
-                prefix, label = key.split('__', 2)
-                if prefix and prefix.isdigit():
-                    result[int(prefix)][label] = value
+                block_value = subfactory(value=value)
 
-        retval = []
-        for index, index_params in sorted(result.items()):
-            item = subfactory(**index_params)
-            retval.append(item)
-        return retval
+            result.append(block_value)
+
+        return result
 
 
 class BlockFactory(factory.Factory):
@@ -113,18 +108,18 @@ class ChooserBlockFactory(BlockFactory):
 
 class ImageChooserBlockFactory(ChooserBlockFactory):
 
-    image = factory.SubFactory(ImageFactory)
+    value = factory.SubFactory(ImageFactory)
 
     class Meta:
         model = ImageChooserBlock
 
     @classmethod
-    def _build(cls, model_class, image):
-        return image
+    def _build(cls, model_class, value):
+        return cls._create(cls, model_class, value)
 
     @classmethod
-    def _create(cls, model_class, image):
-        return image
+    def _create(cls, model_class, value):
+        return model_class().get_prep_value(model_class().clean(value))
 
 
 class StructBlockFactory(factory.Factory):
@@ -134,14 +129,36 @@ class StructBlockFactory(factory.Factory):
 
     @classmethod
     def _build(cls, model_class, *args, **kwargs):
+        result = {}
         block = model_class()
-        return blocks.StructValue(block, [
-            (
-                name,
-                (kwargs[name] if name in kwargs else child_block.get_default())
-            )
-            for name, child_block in block.child_blocks.items()
-        ])
+
+        for name, child_block in block.child_blocks.items():
+            subfactory = getattr(cls, name, None)
+            try:
+                block_args = kwargs[name]
+                # If block_args are actually defined as None, skip over this block
+                if block_args == None:
+                    continue
+            except KeyError:
+                block_args = None
+
+            # If a subfactory is defined, use the block arguments to get a value
+            if subfactory and isinstance(subfactory, factory.SubFactory):
+                if isinstance(block_args, dict):
+                    value = subfactory.get_factory()(**block_args)
+                elif isinstance(block_args, list):
+                    value = subfactory(items=block_args)
+                else:
+                    value = subfactory.get_factory()(value=block_args)
+            else:
+                # If the subfactory isn't an isntance of subfactory, it must be
+                # a plain value to use as a default.
+                default_value = subfactory
+                value = block_args or default_value
+
+            result[name] = value
+
+        return result
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

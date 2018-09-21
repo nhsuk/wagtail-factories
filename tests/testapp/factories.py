@@ -31,14 +31,16 @@ class MyTestPageFactory(wagtail_factories.PageFactory):
 
 class MyTestPageWithStreamFieldFactory(wagtail_factories.PageFactory):
 
-    body = wagtail_factories.StreamFieldFactory({
-        'char_array': wagtail_factories.ListBlockFactory(
-            wagtail_factories.CharBlockFactory),
-        'int_array': wagtail_factories.ListBlockFactory(
-            wagtail_factories.IntegerBlockFactory),
-        'struct': MyBlockFactory,
-        'image': wagtail_factories.ImageChooserBlockFactory
-    })
+    body = wagtail_factories.StreamFieldFactory(models.MyTestPage.body, [
+        ('char_array', wagtail_factories.ListBlockFactory(
+            wagtail_factories.CharBlockFactory
+        )),
+        ('int_array', wagtail_factories.ListBlockFactory(
+            wagtail_factories.IntegerBlockFactory
+        )),
+        ('struct', MyBlockFactory),
+        ('image', wagtail_factories.ImageChooserBlockFactory),
+    ])
 
     class Meta:
         model = models.MyTestPage
