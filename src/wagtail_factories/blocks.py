@@ -28,6 +28,8 @@ class StreamFieldFactory(ParameteredAttribute):
     """
         Syntax:
             <streamfield>__<index>__<block_name>__<key>='foo',
+            or
+            <streamfield>__<index>__<block_name>='foo',
 
     """
     def __init__(self, factories, **kwargs):
@@ -39,14 +41,20 @@ class StreamFieldFactory(ParameteredAttribute):
         result = defaultdict(lambda: defaultdict(lambda: defaultdict()))
 
         for key, value in params.items():
-            try:
-                index, block_name, param = key.split('__', 2)
-            except ValueError:
-                continue
-            if not index.isdigit():
+            parts = key.split('__', 2)
+            index = parts[0]
+            if index.isdigit():
+                index = int(index)
+            else:
                 continue
 
-            index = int(index)
+            block_name = parts[1]
+
+            if len(parts) == 2:
+                param = 'value'
+            if len(parts) == 3:
+                param = parts[2]
+
             result[index][block_name][param] = value
 
         retval = []
@@ -97,15 +105,31 @@ class StreamBlockSubFactory(factory.SubFactory):
 
     def generate(self, step, params):
         subfactory = self.get_factory()
-        result = defaultdict(dict)
+
+        result = defaultdict(lambda: defaultdict(lambda: defaultdict()))
+
         for key, value in params.items():
-            index, block_name = key.split('__', 1)
-            result[int(index)] = (block_name, value)
+            parts = key.split('__', 2)
+            index = parts[0]
+            if index.isdigit():
+                index = int(index)
+            else:
+                continue
+
+            block_name = parts[1]
+
+            if len(parts) == 2:
+                param = 'value'
+            if len(parts) == 3:
+                param = parts[2]
+
+            result[index][block_name][param] = value
 
         retval = []
-        for index, (block_name, value) in sorted(result.items()):
-            value = subfactory(block_name=block_name, value=value)
-            retval.append((block_name, value))
+        for index, block_items in sorted(result.items()):
+            for block_name, block_params in block_items.items():
+                value = subfactory(block_name=block_name, **block_params)
+                retval.append((block_name, value))
 
         return blocks.StreamValue(subfactory._meta.model(), retval)
 
@@ -119,8 +143,8 @@ class StreamBlockFactory(factory.Factory):
         return child_block.to_python(value)
 
     @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        return cls._build(model_class, *args, **kwargs)
+    def _create(cls, model_class, block_name, value, *args, **kwargs):
+        return cls._build(model_class, block_name, value, *args, **kwargs)
 
 
 class BlockFactory(factory.Factory):

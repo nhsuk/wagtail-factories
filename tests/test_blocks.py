@@ -5,10 +5,10 @@ import pytest
 from wagtail_factories.wrapper import DictToParameteredAttribute
 
 try:
-    from wagtail.wagtailcore.blocks import StructValue
+    from wagtail.wagtailcore.blocks import StructValue, StreamValue
     from wagtail.wagtailimages.models import Image
 except ImportError:
-    from wagtail.core.blocks import StructValue
+    from wagtail.core.blocks import StructValue, StreamValue
     from wagtail.images.models import Image
 
 import wagtail_factories
@@ -113,8 +113,10 @@ def test_custom_page_streamfield_data_complex():
         body__1__struct__image__image=None,
         body__3__image__image__title='Blub',
         body__4__stream__0__title="Stream title",
-        body__4__stream__1__subtitle="Stream subtitle",
+        body__4__stream__1__subtitle__value="Stream subtitle",
+        body__5__char="A char",
     )
+
     assert Image.objects.count() == 1
     image = Image.objects.first()
 
@@ -131,6 +133,11 @@ def test_custom_page_streamfield_data_complex():
         ])),
         ('int_array', [100]),
         ('image', image),
+        ('stream', StreamValue(None, [
+            ('title', 'Stream title'),
+            ('subtitle', 'Stream subtitle'),
+        ])),
+        ('char', 'A char'),
     ]
     content = str(page.body)
     assert 'block-image' in content
