@@ -38,6 +38,12 @@ class MyStreamBlockFactory(wagtail_factories.StreamBlockFactory):
         model = models.MyStreamBlock
 
 
+class MyCharBlockFactory(wagtail_factories.CharBlockFactory):
+
+    class Meta:
+        model = models.MyCharBlock
+
+
 class MyTestPageWithStreamFieldFactory(wagtail_factories.PageFactory):
 
     body = wagtail_factories.StreamFieldFactory({
@@ -45,6 +51,7 @@ class MyTestPageWithStreamFieldFactory(wagtail_factories.PageFactory):
             wagtail_factories.CharBlockFactory),
         'int_array': wagtail_factories.ListBlockFactory(
             wagtail_factories.IntegerBlockFactory),
+        'char': MyCharBlockFactory,
         'struct': MyBlockFactory,
         'image': wagtail_factories.ImageChooserBlockFactory,
         'stream': wagtail_factories.StreamBlockSubFactory(

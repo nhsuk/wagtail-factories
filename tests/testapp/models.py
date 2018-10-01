@@ -27,6 +27,10 @@ class MyStreamBlock(blocks.StreamBlock):
     subtitle = blocks.CharBlock()
 
 
+class MyCharBlock(blocks.CharBlock):
+    pass
+
+
 class MyTestPage(Page):
     body = StreamField([
         ('char_array', blocks.ListBlock(blocks.CharBlock())),
@@ -34,4 +38,5 @@ class MyTestPage(Page):
         ('struct', MyBlock()),
         ('image', ImageChooserBlock()),
         ('stream', MyStreamBlock()),
+        ('char', MyCharBlock()),
     ])
