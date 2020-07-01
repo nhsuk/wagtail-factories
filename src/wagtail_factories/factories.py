@@ -12,7 +12,7 @@ try:
 except ImportError:
     from wagtail.core.models import Collection, Page, Site
     from wagtail.images import get_image_model
-    from wagtail.documents.models import get_document_model
+    from wagtail.documents import get_document_model
 
 __all__ = ["CollectionFactory", "ImageFactory", "PageFactory", "SiteFactory", "DocumentFactory"]
 logger = logging.getLogger(__file__)
