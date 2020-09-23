@@ -4,15 +4,19 @@ import factory
 from django.utils.text import slugify
 from factory import errors, utils
 from factory.declarations import ParameteredAttribute
+from wagtail import VERSION as WAGTAIL_VERSION
+from wagtail.core.models import Collection, Page, Site
+from wagtail.images import get_image_model
 
 try:
-    from wagtail.wagtailcore.models import Collection, Page, Site
-    from wagtail.wagtailimages import get_image_model
-    from wagtail.wagtaildocs import get_document_model
+    from factory.django import DjangoModelFactory
 except ImportError:
-    from wagtail.core.models import Collection, Page, Site
-    from wagtail.images import get_image_model
+    from factory import DjangoModelFactory
+
+if WAGTAIL_VERSION >= (2, 8):
     from wagtail.documents import get_document_model
+else:
+    from wagtail.documents.models import get_document_model
 
 __all__ = ["CollectionFactory", "ImageFactory", "PageFactory", "SiteFactory", "DocumentFactory"]
 logger = logging.getLogger(__file__)
@@ -40,7 +44,7 @@ class ParentNodeFactory(ParameteredAttribute):
         return step.recurse(subfactory, params, force_sequence=force_sequence)
 
 
-class MP_NodeFactory(factory.DjangoModelFactory):
+class MP_NodeFactory(DjangoModelFactory):
 
     parent = ParentNodeFactory()
 
@@ -116,7 +120,7 @@ class PageFactory(MP_NodeFactory):
         model = Page
 
 
-class CollectionMemberFactory(factory.DjangoModelFactory):
+class CollectionMemberFactory(DjangoModelFactory):
     collection = factory.SubFactory(CollectionFactory, parent=None)
 
 
@@ -128,7 +132,7 @@ class ImageFactory(CollectionMemberFactory):
     file = factory.django.ImageField()
 
 
-class SiteFactory(factory.DjangoModelFactory):
+class SiteFactory(DjangoModelFactory):
     hostname = "localhost"
     port = factory.Sequence(lambda n: 81 + n)
     site_name = "Test site"
