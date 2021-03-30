@@ -183,12 +183,13 @@ class StreamBlockSubFactory(factory.SubFactory):
 
         stream_blocks = []
         for index, block_items in sorted(result.items()):
+            all_blocks_params = defaultdict(None)
             for block_name, block_params in block_items.items():
-                all_blocks = subfactory(**block_params)
-                value = all_blocks[block_name]
-                stream_blocks.append((block_name, value))
+                all_blocks_params.update(**block_params)
+            all_blocks = subfactory(**all_blocks_params)
+            stream_blocks.append((block_name, all_blocks))
 
-        return blocks.StreamValue(subfactory._meta.model(), stream_blocks)
+        return blocks.StreamValue(subfactory._meta.model(), list(all_blocks.items()))
 
 
 class StreamBlockFactory(factory.Factory):
