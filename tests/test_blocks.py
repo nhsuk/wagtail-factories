@@ -1,11 +1,11 @@
 from collections import OrderedDict
 
 import pytest
-from wagtail.core.blocks import StructValue
+from wagtail.core.blocks import StreamValue, StructValue
 from wagtail.images.models import Image
 
 import wagtail_factories
-from tests.testapp.factories import MyBlockFactory, MyTestPageWithStreamFieldFactory
+from tests.testapp.factories import MyBlockFactory, MyTestPageWithStreamFieldFactory, MyStreamBlockFactory
 
 
 @pytest.mark.django_db
@@ -81,6 +81,81 @@ def test_block_factory_subkwarg():
 
 
 @pytest.mark.django_db
+def test_list_streamblock_factory():
+    value = MyStreamBlockFactory(
+        items__0__label="label-1",
+        items__0__value=1,
+        items__1__label="label-2",
+        items__1__value=2,
+        image__image=None,
+    )
+
+    assert value == OrderedDict(
+        [
+            ("title", "my title"),
+            ("subtitle", "my subtitle"),
+            ("item", OrderedDict([("label", "my-label"), ("value", 100)])),
+            (
+                "items",
+                [
+                    OrderedDict([("label", "label-1"), ("value", 1)]),
+                    OrderedDict([("label", "label-2"), ("value", 2)]),
+                ],
+            ),
+            ("image", None),
+        ],
+    )
+
+
+@pytest.mark.django_db
+def test_streamblock_factory():
+    value = MyStreamBlockFactory(image__image__title="blub")
+
+    assert value == OrderedDict(
+        [
+            ("title", "my title"),
+            ("subtitle", "my subtitle"),
+            ("item", OrderedDict([("label", "my-label"), ("value", 100)])),
+            ("items", []),
+            ("image", Image.objects.first()),
+        ]
+    )
+
+    assert value["image"].title == "blub"
+
+
+def test_streamblock_factory_build():
+    value = MyStreamBlockFactory.build(image__image__title="blub")
+
+    image = value.pop("image")
+    assert image.title == "blub"
+
+    assert value == OrderedDict(
+        [
+            ("title", "my title"),
+            ("subtitle", "my subtitle"),
+            ("item", OrderedDict([("label", "my-label"), ("value", 100)])),
+            ("items", []),
+        ]
+    )
+
+
+@pytest.mark.django_db
+def test_streamblock_factory_subkwarg():
+    value = MyStreamBlockFactory(item__label="my-label", item__value=20, image__image=None)
+
+    assert value == OrderedDict(
+        [
+            ("title", "my title"),
+            ("subtitle", "my subtitle"),
+            ("item", OrderedDict([("label", "my-label"), ("value", 20)])),
+            ("items", []),
+            ("image", None),
+        ]
+    )
+
+
+@pytest.mark.django_db
 def test_custom_page_streamfield_data_complex():
     assert Image.objects.count() == 0
 
@@ -94,6 +169,10 @@ def test_custom_page_streamfield_data_complex():
         body__1__struct__item__value=100,
         body__1__struct__image__image=None,
         body__3__image__image__title="Blub",
+        body__4__stream_block__0__title="My Streamblock Title",
+        body__4__stream_block__0__subtitle="My Streamblock Subtitle",
+        body__4__stream_block__0__item__value=100,
+        body__4__stream_block__0__image__image=None,
     )
     assert Image.objects.count() == 1
     image = Image.objects.first()
@@ -117,6 +196,23 @@ def test_custom_page_streamfield_data_complex():
         ),
         ("int_array", [100]),
         ("image", image),
+        (
+            "stream_block",
+            StreamValue(
+                None,
+                [
+                    ("title", "My Streamblock Title"),
+                    ("subtitle", "My Streamblock Subtitle"),
+                    (
+                        "item",
+                        StructValue(None, [("label", "my-label"), ("value", 100)]),
+                    ),
+                    ("items", []),
+                    ("image", None),
+                ],
+            ),
+        ),
+        
     ]
     content = str(page.body)
     assert "block-image" in content
