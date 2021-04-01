@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 install_requires = [
     "factory-boy>=2.8.0",
-    "wagtail==2.10",
+    "wagtail>=2.0",
 ]
 
 docs_require = [

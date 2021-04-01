@@ -31,6 +31,7 @@ class MyTestPage(Page):
             ("int_array", blocks.ListBlock(blocks.IntegerBlock())),
             ("struct", MyBlock()),
             ("image", ImageChooserBlock()),
+            ("richtext", blocks.RichTextBlock()),
             ("stream_block", MyStreamBlock()),
         ]
     )

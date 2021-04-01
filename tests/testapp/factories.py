@@ -58,6 +58,7 @@ class MyTestPageWithStreamFieldFactory(wagtail_factories.PageFactory):
             ),
             "struct": MyBlockFactory,
             "image": wagtail_factories.ImageChooserBlockFactory,
+            "richtext": wagtail_factories.RichTextBlockFactory,
             "stream_block": wagtail_factories.StreamBlockSubFactory(MyStreamBlockFactory),
         }
     )

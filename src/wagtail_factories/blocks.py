@@ -14,6 +14,7 @@ __all__ = [
     "ListBlockFactory",
     "StructBlockFactory",
     "ImageChooserBlockFactory",
+    "RichTextBlockFactory",
     "StreamBlockFactory",
     "StreamBlockSubFactory",
 ]
@@ -256,3 +257,16 @@ class StreamBlockFactory(factory.Factory):
         for block_type, value in kwargs.items():
             blocks[block_type] = value
         return blocks
+
+class RichTextBlockFactory(factory.Factory):
+    @classmethod
+    def _build(cls, model_class, value=""):
+        block = model_class()
+        return block.to_python(value)
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        return cls._build(model_class, *args, **kwargs)
+
+    class Meta:
+        model = blocks.RichTextBlock
