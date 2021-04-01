@@ -16,6 +16,14 @@ class MyBlock(blocks.StructBlock):
     image = ImageChooserBlock()
 
 
+class MyStreamBlock(blocks.StreamBlock):
+    title = blocks.CharBlock(max_length=100)
+    subtitle = blocks.CharBlock()
+    item = MyBlockItem()
+    items = blocks.ListBlock(MyBlockItem)
+    image = ImageChooserBlock()
+
+
 class MyTestPage(Page):
     body = StreamField(
         [
@@ -23,5 +31,6 @@ class MyTestPage(Page):
             ("int_array", blocks.ListBlock(blocks.IntegerBlock())),
             ("struct", MyBlock()),
             ("image", ImageChooserBlock()),
+            ("stream_block", MyStreamBlock()),
         ]
     )

@@ -28,6 +28,18 @@ class MyTestPageFactory(wagtail_factories.PageFactory):
         model = models.MyTestPage
 
 
+class MyStreamBlockFactory(wagtail_factories.StreamBlockFactory):
+
+    title = "my title"
+    subtitle = "my subtitle"
+    item = factory.SubFactory(MyBlockItemFactory)
+    items = wagtail_factories.ListBlockFactory(MyBlockItemFactory)
+    image = factory.SubFactory(wagtail_factories.ImageChooserBlockFactory)
+
+    class Meta:
+        model = models.MyStreamBlock
+
+
 class MyTestPageGetOrCreateFactory(wagtail_factories.PageFactory):
     class Meta:
         model = models.MyTestPage
@@ -46,6 +58,7 @@ class MyTestPageWithStreamFieldFactory(wagtail_factories.PageFactory):
             ),
             "struct": MyBlockFactory,
             "image": wagtail_factories.ImageChooserBlockFactory,
+            "stream_block": wagtail_factories.StreamBlockSubFactory(MyStreamBlockFactory),
         }
     )
 
