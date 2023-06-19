@@ -1,8 +1,11 @@
 from collections import OrderedDict
 
 import pytest
-from wagtail.core.blocks import StructValue
-from wagtail.core.rich_text import RichText
+
+from wagtail_factories.wrapper import DictToParameteredAttribute
+
+
+from wagtail.blocks import StructValue, StreamValue
 from wagtail.images.models import Image
 
 import wagtail_factories
@@ -97,6 +100,84 @@ def test_custom_page_streamfield_data_complex():
         body__3__image__image__title="Blub",
         body__4__richtext__value="This is some <strong>richtext</strong>",
     )
+
+    assert Image.objects.count() == 1
+    image = Image.objects.first()
+
+    assert page.body.stream_data == [
+        ('char_array', ['foo', 'bar']),
+        ('struct', StructValue(None, [
+            ('title', 'My Title'),
+            ('item', StructValue(None, [
+                ('label', 'my-label'),
+                ('value', 100),
+            ])),
+            ('items', []),
+            ('image', None),
+        ])),
+        ('int_array', [100]),
+        ('image', image),
+        ('stream', StreamValue(None, [
+            ('title', 'Stream title'),
+            ('subtitle', 'Stream subtitle'),
+        ])),
+        ('char', 'A char'),
+        ('stream', StreamValue(None, [
+            ('item', StructValue(None, [
+                ('label', 'A deeply nested item'),
+                ('value', 100),
+            ]))
+        ])),
+    ]
+    content = str(page.body)
+    assert 'block-image' in content
+
+
+@pytest.mark.django_db
+def test_custom_page_streamfield_data_dict():
+    assert Image.objects.count() == 0
+
+    root_page = wagtail_factories.PageFactory(parent=None)
+    params = OrderedDict({
+        'parent': root_page,
+        'body': [
+            {
+                'char_array': [
+                    'foo',
+                    'bar',
+                ],
+            },
+            {
+                'struct': {
+                    'title': 'My Title',
+                    'item': {
+                        'value': 100,
+                    },
+                    'image': {
+                        'image': None,
+                    },
+                },
+            },
+            {
+                'int_array': [
+                    100,
+                ],
+            },
+            {
+                'image': {
+                    'image': {
+                        'title': 'Blub',
+                    },
+                },
+            },
+        ],
+    })
+
+    page = DictToParameteredAttribute(
+        MyTestPageWithStreamFieldFactory,
+        params=params
+    )
+
     assert Image.objects.count() == 1
     image = Image.objects.first()
 

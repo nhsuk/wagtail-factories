@@ -34,6 +34,22 @@ class MyTestPageGetOrCreateFactory(wagtail_factories.PageFactory):
         django_get_or_create = ["slug", "parent"]
 
 
+class MyStreamBlockFactory(wagtail_factories.StreamBlockFactory):
+
+    title = "Char block"
+    subtitle = "Another char block"
+    item = factory.SubFactory(MyBlockItemFactory)
+
+    class Meta:
+        model = models.MyStreamBlock
+
+
+class MyCharBlockFactory(wagtail_factories.CharBlockFactory):
+
+    class Meta:
+        model = models.MyCharBlock
+
+
 class MyTestPageWithStreamFieldFactory(wagtail_factories.PageFactory):
 
     body = wagtail_factories.StreamFieldFactory(

@@ -1,6 +1,6 @@
-from wagtail.core import blocks
-from wagtail.core.fields import StreamField
-from wagtail.core.models import Page
+from wagtail import blocks
+from wagtail.fields import StreamField
+from wagtail.models import Page
 from wagtail.images.blocks import ImageChooserBlock
 
 
@@ -14,6 +14,16 @@ class MyBlock(blocks.StructBlock):
     item = MyBlockItem()
     items = blocks.ListBlock(MyBlockItem)
     image = ImageChooserBlock()
+
+
+class MyStreamBlock(blocks.StreamBlock):
+    title = blocks.CharBlock(max_length=100)
+    subtitle = blocks.CharBlock()
+    item = MyBlockItem()
+
+
+class MyCharBlock(blocks.CharBlock):
+    pass
 
 
 class MyTestPage(Page):

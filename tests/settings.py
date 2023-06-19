@@ -11,7 +11,7 @@ CACHES = {
     }
 }
 
-ROOT_URLCONF = "tests.urls"
+ROOT_URLCONF = 'wagtail.test.urls'
 
 SECRET_KEY = "Gx8sMKAtnA69TR9lyAlLuSnozUv3kxdscHkpwEjatZRVQQ0laMY69KL4XPxvr3KY"
 
@@ -64,25 +64,26 @@ if WAGTAIL_VERSION < (2, 0):
     ] + INSTALLED_APPS
 else:
     INSTALLED_APPS = [
-        "wagtail.contrib.styleguide",
-        "wagtail.contrib.sitemaps",
-        "wagtail.contrib.routable_page",
-        "wagtail.contrib.frontend_cache",
-        "wagtail.contrib.search_promotions",
-        "wagtail.contrib.settings",
-        "wagtail.contrib.modeladmin",
-        "wagtail.contrib.table_block",
-        "wagtail.contrib.forms",
-        "wagtail.search",
-        "wagtail.embeds",
-        "wagtail.images",
-        "wagtail.sites",
-        "wagtail.users",
-        "wagtail.snippets",
-        "wagtail.documents",
-        "wagtail.admin",
-        "wagtail.api.v2",
-        "wagtail.core",
+        'wagtail.contrib.styleguide',
+        'wagtail.contrib.sitemaps',
+        'wagtail.contrib.routable_page',
+        'wagtail.contrib.frontend_cache',
+        'wagtail.contrib.search_promotions',
+        'wagtail.contrib.settings',
+        'wagtail.contrib.modeladmin',
+        'wagtail.contrib.table_block',
+        'wagtail.contrib.forms',
+
+        'wagtail.search',
+        'wagtail.embeds',
+        'wagtail.images',
+        'wagtail.sites',
+        'wagtail.users',
+        'wagtail.snippets',
+        'wagtail.documents',
+        'wagtail.admin',
+        'wagtail.api.v2',
+        'wagtail',
     ] + INSTALLED_APPS
 
 
