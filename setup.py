@@ -14,8 +14,8 @@ docs_require = [
 ]
 
 tests_require = [
-    'pytest==6.2.2',
-    'pytest-django==4.1.0',
+    'pytest<=8.2',
+    'pytest-django<=4.8',
     'pytest-cov==2.4.0',
     'pytest-pythonpath==0.7.1',
     'psycopg2>=2.3.1',
