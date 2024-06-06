@@ -6,7 +6,7 @@ install_requires = [
     'factory-boy>2.8.0',
     'wagtail>=5.0',
     'flatdict>=3.0.1',
-    "Django<=4.2",
+    'Django>=3.2.25, <5.0',
 ]
 
 docs_require = [
@@ -33,7 +33,7 @@ with open('README.rst') as fh:
 
 setup(
     name='wagtail_factories',
-    version='3.0.0',
+    version='3.0.1',
     description='Factory boy classes for wagtail',
     long_description=long_description,
     author="Michael van Tellingen",
